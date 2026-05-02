@@ -163,7 +163,7 @@
                             <div class="text-center">
                                 <span class="material-symbols-outlined text-[48px] text-secondary mb-sm group-hover:text-primary" data-icon="cloud_upload">cloud_upload</span>
                                 <p class="font-body-md text-on-surface font-semibold">Arrastre los archivos aquí</p>
-                                <p class="font-body-sm text-on-surface-variant mt-1">Permitidos: JPG, PNG, PDF (Máx. 10MB c/u)</p>
+                                <p class="font-body-sm text-on-surface-variant mt-1">Permitidos: JPG, PNG, PDF (Máx. 5MB c/u)</p>
                             </div>
                             <input class="absolute inset-0 opacity-0 cursor-pointer" id="fileUpload" multiple accept=".jpg,.jpeg,.png,.pdf" type="file"/>
                         </div>
@@ -240,7 +240,7 @@
         const errorText = document.getElementById('errorText');
 
         const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'application/pdf'];
-        const MAX_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
+        const MAX_SIZE_BYTES = 5 * 1024 * 1024; // 10MB
         const MAX_FILES = 2;
         const MIN_FILES = 1;
 
