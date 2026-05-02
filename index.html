@@ -120,7 +120,7 @@
 <img alt="Logo DHO" class="h-8 w-auto" src="logo-dho.png"/>
 </div></div>
 <div class="text-xl font-bold tracking-tighter text-slate-900 dark:text-white mr-auto">
-                ColaboradoresPortal
+                Registro de multa por omisión a la votación - Administración de Personal
             </div>
 
 </div>
@@ -226,7 +226,7 @@
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwzGz4VoDJE_jnHhG5yeXPsGFAZjiIJaZ0XV5cdXsa88db_3CxWrzxMrZEboP08qhwO/exec'; // Reemplazar con la URL de Apps Script
         const TOKEN = 'sopadecaracol'; // Mismo token del backend
         // ==========================================
-            const form = document.getElementById('uploadForm');
+        const form = document.getElementById('uploadForm');
         const fileInput = document.getElementById('fileUpload');
         const fileListDiv = document.getElementById('fileList');
         const submitBtn = document.getElementById('submitBtn');
@@ -246,14 +246,6 @@
 
         // Array para acumular los archivos seleccionados
         let accumulatedFiles = [];
-
-        // VERIFICACIÓN DE ENVÍO PREVIO (Navegador)
-        window.addEventListener('DOMContentLoaded', () => {
-            if (localStorage.getItem('documentosEnviados') === 'true') {
-                form.style.display = 'none';
-                showSuccess('Ya has enviado tus documentos anteriormente. Gracias.');
-            }
-        });
 
         // Lógica para acumular archivos
         fileInput.addEventListener('change', () => {
@@ -363,14 +355,17 @@
                 const result = await response.json();
 
                 if (result.success) {
-                    showSuccess('Documentos cargados exitosamente. El portal ha registrado su entrega.');
+                    showSuccess('Documentos cargados exitosamente. Puede continuar con el siguiente colaborador.');
+                    // Limpiamos el formulario y la lista de archivos para el siguiente envío
                     form.reset();
                     accumulatedFiles = [];
                     renderFiles();
-                    // Guardar en el navegador que ya envió
-                    localStorage.setItem('documentosEnviados', 'true');
-                    // Ocultar formulario para evitar reenvíos
-                    setTimeout(() => { form.style.display = 'none'; }, 2000);
+                    
+                    // Opcional: Ocultar el mensaje de éxito después de unos segundos
+                    setTimeout(() => {
+                        hideMessages();
+                    }, 5000);
+
                 } else {
                     showError('Error: ' + (result.message || 'Desconocido'));
                 }
@@ -432,7 +427,6 @@
                 uploadProgress.classList.add('hidden');
             }
         }
-        
     </script>
 </body>
 </html>
