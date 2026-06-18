@@ -97,6 +97,9 @@
 </head>
 <body class="bg-surface text-on-surface min-h-screen flex flex-col">
 
+
+
+
     <header class="bg-white dark:bg-slate-900 sticky top-0 z-50 border-b border-slate-200 dark:border-slate-800 shadow-sm shadow-slate-200/50 dark:shadow-none">
         <div class="flex items-center h-auto py-2 md:h-20 md:py-0 px-4 md:px-12 w-full max-w-screen-2xl mx-auto gap-3 md:gap-6">
             <div class="flex items-center gap-2 md:gap-4 shrink-0">
@@ -105,7 +108,7 @@
                 <img alt="Logo DHO" class="h-10 md:h-16 w-auto" src="logo-dho.png"/>
             </div>
             <h1 class="text-xs sm:text-sm md:text-xl font-bold tracking-tighter text-slate-900 dark:text-white min-w-0 leading-tight">
-                Registro de pago de multa por Elecciones Generales 2026 - 12 de abril
+                Registro de pago de multa por Elecciones Generales 2026 - 7 de junio
             </h1>
         </div>
     </header>
@@ -144,9 +147,18 @@
                         </div>
                     </div>
 
+
+    <!-- CHECKBOX SEGUNDA VUELTA -->
+<div class="my-md flex items-center gap-xs p-sm bg-surface-container-low rounded-lg border border-outline-variant">
+    <input type="checkbox" id="checkboxSegundaVuelta" class="w-5 h-5 text-primary rounded border-outline-variant focus:ring-primary cursor-pointer" />
+    <label for="checkboxSegundaVuelta" class="font-label-md text-on-surface cursor-pointer select-none">
+        ¿Desea registrar el pago de multa por Segunda Vuelta?
+    </label>
+</div>
+
                     <!-- ZONA 1: Multa por votación -->
 <div class="space-y-sm">
-    <label class="font-label-md text-label-md text-on-surface-variant" for="fileUpload1">
+    <label id="labelVotacion" class="font-label-md text-label-md text-on-surface-variant" for="fileUpload1">
         Pago de multa por votación (Máximo 1 archivo)
     </label>
     <div id="dropZone1" role="button" tabindex="0"
@@ -156,7 +168,6 @@
             <p class="font-body-md text-on-surface font-semibold">Arrastre el archivo aquí</p>
             <p class="font-body-sm text-on-surface-variant mt-1">Permitidos: JPG, PNG, PDF (Máx. 5 MB)</p>
         </div>
-        <!-- Se quitó 'multiple', se cambió el ID -->
         <input id="fileUpload1" type="file" accept=".jpg,.jpeg,.png,.pdf"
             class="absolute inset-0 opacity-0 cursor-pointer" aria-hidden="true" tabindex="-1"/>
     </div>
@@ -171,9 +182,9 @@
     </label>
 </div>
 
-<!-- ZONA 2: Multa por miembro de mesa (Oculto por defecto con la clase 'hidden') -->
+<!-- ZONA 2: Multa por miembro de mesa -->
 <div id="zonaMiembroMesa" class="space-y-sm hidden">
-    <label class="font-label-md text-label-md text-on-surface-variant" for="fileUpload2">
+    <label id="labelMiembro" class="font-label-md text-label-md text-on-surface-variant" for="fileUpload2">
         Pago de multa por miembro de mesa (Máximo 1 archivo)
     </label>
     <div id="dropZone2" role="button" tabindex="0"
@@ -183,12 +194,12 @@
             <p class="font-body-md text-on-surface font-semibold">Arrastre el archivo aquí</p>
             <p class="font-body-sm text-on-surface-variant mt-1">Permitidos: JPG, PNG, PDF (Máx. 5 MB)</p>
         </div>
-        <!-- Se quitó 'multiple', se cambió el ID -->
         <input id="fileUpload2" type="file" accept=".jpg,.jpeg,.png,.pdf"
             class="absolute inset-0 opacity-0 cursor-pointer" aria-hidden="true" tabindex="-1"/>
     </div>
     <ul id="fileList2" class="hidden space-y-xs pt-xs" role="list"></ul>
 </div>
+
 
 
                     <div id="uploadProgress" class="hidden space-y-xs" aria-live="polite">
@@ -232,138 +243,158 @@
         };
 
         const form = document.getElementById('uploadForm');
-        
-        // Elementos Zona 1 (Votación)
-        const dropZone1  = document.getElementById('dropZone1');
-        const fileInput1 = document.getElementById('fileUpload1');
-        const fileList1  = document.getElementById('fileList1');
-        
-        // Elementos Zona 2 (Miembro de Mesa) y Checkbox
+
+        // Zona 1 (Votación)
+        const dropZone1      = document.getElementById('dropZone1');
+        const fileInput1     = document.getElementById('fileUpload1');
+        const fileList1      = document.getElementById('fileList1');
+        const labelVotacion  = document.getElementById('labelVotacion');
+
+        // Zona 2 (Miembro de Mesa)
         const checkboxMiembro = document.getElementById('checkboxMiembro');
         const zonaMiembroMesa = document.getElementById('zonaMiembroMesa');
         const dropZone2       = document.getElementById('dropZone2');
         const fileInput2      = document.getElementById('fileUpload2');
         const fileList2       = document.getElementById('fileList2');
+        const labelMiembro    = document.getElementById('labelMiembro');
 
-        // Elementos Globales de UI
+        // Checkbox Segunda Vuelta
+        const checkboxSegundaVuelta = document.getElementById('checkboxSegundaVuelta');
+
+        // UI global
         const submitBtn      = document.getElementById('submitBtn');
-        const btnText        = document.getElementById('btnText'); // Asegúrate de tener <span id="btnText">Enviar...</span> dentro del botón
+        const btnText        = document.getElementById('btnText');
         const uploadProgress = document.getElementById('uploadProgress');
         const statusMessage  = document.getElementById('statusMessage');
 
-        // Estado de los archivos
+        // Estado de archivos
         let archivoVotacion = null;
         let archivoMiembro  = null;
+        const previewURLs   = { 1: null, 2: null };
 
-        // ── Lógica del Checkbox ────────────────────────────────────
+        // Textos de labels según vuelta
+        const LABELS = {
+            votacion: {
+                primera:  'Pago de multa por votación (Máximo 1 archivo)',
+                segunda:  'Pago de multa por votación - Segunda Vuelta (Máximo 1 archivo)',
+            },
+            miembro: {
+                primera:  'Pago de multa por miembro de mesa (Máximo 1 archivo)',
+                segunda:  'Pago de multa por miembro de mesa - Segunda Vuelta (Máximo 1 archivo)',
+            },
+        };
+
+        // ── Checkboxes ─────────────────────────────────────────────
         checkboxMiembro.addEventListener('change', e => {
             hideMessage();
             if (e.target.checked) {
                 zonaMiembroMesa.classList.remove('hidden');
             } else {
                 zonaMiembroMesa.classList.add('hidden');
-                archivoMiembro = null;
+                archivoMiembro   = null;
                 fileInput2.value = '';
                 renderFile(null, fileList2, 2);
             }
         });
 
-        // ── Drag & drop (Reutilizable para ambas zonas) ────────────
+        checkboxSegundaVuelta.addEventListener('change', e => {
+            hideMessage();
+            const vuelta = e.target.checked ? 'segunda' : 'primera';
+            labelVotacion.textContent = LABELS.votacion[vuelta];
+            labelMiembro.textContent  = LABELS.miembro[vuelta];
+            archivoVotacion = null;
+            archivoMiembro  = null;
+            fileInput1.value = '';
+            fileInput2.value = '';
+            renderFile(null, fileList1, 1);
+            renderFile(null, fileList2, 2);
+        });
+
+        // ── Drag & drop ────────────────────────────────────────────
         const DRAG_CLASSES = ['border-primary', 'bg-primary/5'];
 
         function setupZone(dropZone, fileInput, listEl, zoneIndex) {
             dropZone.addEventListener('dragover',  e => { e.preventDefault(); dropZone.classList.add(...DRAG_CLASSES); });
             dropZone.addEventListener('dragenter', e => { e.preventDefault(); dropZone.classList.add(...DRAG_CLASSES); });
             dropZone.addEventListener('dragleave', () => dropZone.classList.remove(...DRAG_CLASSES));
-            
+
             dropZone.addEventListener('drop', e => {
                 e.preventDefault();
                 dropZone.classList.remove(...DRAG_CLASSES);
-                if (e.dataTransfer.files.length) {
-                    handleFileSelect(e.dataTransfer.files[0], zoneIndex, fileInput);
-                }
+                if (e.dataTransfer.files.length) handleFileSelect(e.dataTransfer.files[0], zoneIndex);
             });
 
             dropZone.addEventListener('keydown', e => {
-                if (e.key === 'Enter' || e.key === ' ') { 
-                    e.preventDefault(); 
-                    fileInput.click(); 
-                }
+                if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInput.click(); }
             });
 
             fileInput.addEventListener('change', () => {
-                if (fileInput.files.length) {
-                    handleFileSelect(fileInput.files[0], zoneIndex, fileInput);
-                }
-                fileInput.value = ''; // Reset para permitir reselección del mismo archivo si se elimina
+                if (fileInput.files.length) handleFileSelect(fileInput.files[0], zoneIndex);
+                fileInput.value = '';
             });
 
-            // Delegación de eventos para el botón eliminar
             listEl.addEventListener('click', e => {
-                const btn = e.target.closest('button[data-zone]');
-                if (!btn) return;
-                removeFile(zoneIndex);
+                if (e.target.closest('button[data-zone]')) removeFile(zoneIndex);
             });
         }
 
-        // Inicializamos ambas zonas
         setupZone(dropZone1, fileInput1, fileList1, 1);
         setupZone(dropZone2, fileInput2, fileList2, 2);
 
-        // ── Validación y renderizado de archivos ───────────────────
-        function handleFileSelect(file, zoneIndex, inputEl) {
+        // ── Validación y renderizado ───────────────────────────────
+        function handleFileSelect(file, zoneIndex) {
             hideMessage();
-            
-            if (!CONFIG.allowedMimes.includes(file.type)) {
+            if (!CONFIG.allowedMimes.includes(file.type))
                 return showMessage('error', `"${file.name}" no es válido. Solo JPG, PNG o PDF.`);
-            }
-            if (file.size > CONFIG.maxSizeBytes) {
+            if (file.size > CONFIG.maxSizeBytes)
                 return showMessage('error', `"${file.name}" supera los 5 MB permitidos.`);
-            }
 
-            if (zoneIndex === 1) {
-                archivoVotacion = file;
-                renderFile(archivoVotacion, fileList1, 1);
-            } else {
-                archivoMiembro = file;
-                renderFile(archivoMiembro, fileList2, 2);
-            }
+            if (zoneIndex === 1) { archivoVotacion = file; renderFile(file, fileList1, 1); }
+            else                 { archivoMiembro  = file; renderFile(file, fileList2, 2); }
         }
 
         function renderFile(file, listEl, zoneIndex) {
+            if (previewURLs[zoneIndex]) {
+                URL.revokeObjectURL(previewURLs[zoneIndex]);
+                previewURLs[zoneIndex] = null;
+            }
             listEl.innerHTML = '';
             listEl.classList.toggle('hidden', !file);
-
             if (!file) return;
 
-            const icon   = file.type.includes('pdf') ? 'picture_as_pdf' : 'image';
+            const isPDF  = file.type.includes('pdf');
             const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
-            const li     = document.createElement('li');
-            
-            li.className = 'flex items-center justify-between p-xs bg-slate-50 border border-slate-200 rounded text-sm text-slate-700';
+            const objURL = URL.createObjectURL(file);
+            previewURLs[zoneIndex] = objURL;
+
+            const previewHTML = isPDF
+                ? `<object data="${objURL}" type="application/pdf" class="w-full rounded-t-lg" style="height:260px">
+                       <p class="text-center text-xs text-slate-400 py-md">Vista previa no disponible en este dispositivo</p>
+                   </object>`
+                : `<img src="${objURL}" alt="Vista previa" class="w-full object-contain max-h-[260px] rounded-t-lg bg-slate-100" />`;
+
+            const li = document.createElement('li');
+            li.className = 'flex flex-col bg-slate-50 border border-slate-200 rounded-lg overflow-hidden text-sm text-slate-700';
             li.innerHTML = `
-                <div class="flex items-center gap-xs overflow-hidden">
-                    <span class="material-symbols-outlined text-[18px] text-primary" aria-hidden="true">${icon}</span>
-                    <span class="truncate flex-1 font-medium" title="${file.name}">${file.name}</span>
-                    <span class="text-xs text-slate-500 whitespace-nowrap">(${sizeMB} MB)</span>
-                </div>
-                <button type="button" data-zone="${zoneIndex}" aria-label="Eliminar ${file.name}"
-                    class="p-1 text-slate-400 hover:text-error transition-colors flex items-center justify-center rounded-full hover:bg-red-50">
-                    <span class="material-symbols-outlined text-[18px]" aria-hidden="true">close</span>
-                </button>
-            `;
+                ${previewHTML}
+                <div class="flex items-center justify-between px-xs py-xs border-t border-slate-200">
+                    <div class="flex items-center gap-xs overflow-hidden">
+                        <span class="material-symbols-outlined text-[18px] text-primary" aria-hidden="true">${isPDF ? 'picture_as_pdf' : 'image'}</span>
+                        <span class="truncate flex-1 font-medium" title="${file.name}">${file.name}</span>
+                        <span class="text-xs text-slate-500 whitespace-nowrap">(${sizeMB} MB)</span>
+                    </div>
+                    <button type="button" data-zone="${zoneIndex}" aria-label="Eliminar ${file.name}"
+                        class="p-1 text-slate-400 hover:text-error transition-colors flex items-center justify-center rounded-full hover:bg-red-50 shrink-0">
+                        <span class="material-symbols-outlined text-[18px]" aria-hidden="true">close</span>
+                    </button>
+                </div>`;
             listEl.appendChild(li);
         }
 
         function removeFile(zoneIndex) {
             hideMessage();
-            if (zoneIndex === 1) {
-                archivoVotacion = null;
-                renderFile(null, fileList1, 1);
-            } else {
-                archivoMiembro = null;
-                renderFile(null, fileList2, 2);
-            }
+            if (zoneIndex === 1) { archivoVotacion = null; renderFile(null, fileList1, 1); }
+            else                 { archivoMiembro  = null; renderFile(null, fileList2, 2); }
         }
 
         // ── Submit ─────────────────────────────────────────────────
@@ -374,27 +405,23 @@
             const dni       = document.getElementById('dni').value.trim();
             const apellidos = document.getElementById('last_names').value.trim();
             const nombres   = document.getElementById('first_names').value.trim();
+            const esSV      = checkboxSegundaVuelta.checked;
 
-            if (!/^\d{8}$/.test(dni)) {
+            if (!/^\d{8}$/.test(dni))
                 return showMessage('error', 'El DNI debe tener exactamente 8 dígitos numéricos.');
-            }
-            if (!archivoVotacion) {
-                return showMessage('error', 'Debe adjuntar el comprobante de multa por votación.');
-            }
-            if (checkboxMiembro.checked && !archivoMiembro) {
-                return showMessage('error', 'Debe adjuntar el comprobante de multa por miembro de mesa.');
-            }
+            if (!archivoVotacion)
+                return showMessage('error', 'Debe adjuntar el comprobante de multa por votación' + (esSV ? ' (Segunda Vuelta).' : '.'));
+            if (checkboxMiembro.checked && !archivoMiembro)
+                return showMessage('error', 'Debe adjuntar el comprobante de multa por miembro de mesa' + (esSV ? ' (Segunda Vuelta).' : '.'));
 
             setLoading(true);
             try {
-                // Preparamos el array solo con los archivos requeridos según el flujo
-                const filesToSend = [archivoVotacion];
-                if (checkboxMiembro.checked && archivoMiembro) {
-                    filesToSend.push(archivoMiembro);
-                }
+                const filesToSend = [{ file: archivoVotacion, tipo: esSV ? 'VOTACION_SV' : 'VOTACION' }];
+                if (checkboxMiembro.checked)
+                    filesToSend.push({ file: archivoMiembro, tipo: esSV ? 'MIEMBROMESA_SV' : 'MIEMBROMESA' });
 
-                const archivos = await Promise.all(filesToSend.map(fileToBase64));
-                
+                const archivos = await Promise.all(filesToSend.map(({ file, tipo }) => fileToBase64(file, tipo)));
+
                 const response = await fetch(CONFIG.scriptUrl, {
                     method:  'POST',
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -405,14 +432,12 @@
                 if (result.success) {
                     showMessage('success', 'Documentos cargados exitosamente, si tiene alguna consulta puede acercarse a las oficinas de DHO.');
                     form.reset();
-                    
-                    // Limpiamos los estados visuales y lógicos
-                    archivoVotacion = null;
-                    archivoMiembro  = null;
+                    archivoVotacion = archivoMiembro = null;
                     renderFile(null, fileList1, 1);
                     renderFile(null, fileList2, 2);
-                    zonaMiembroMesa.classList.add('hidden'); // Ocultar zona 2 nuevamente
-                    
+                    zonaMiembroMesa.classList.add('hidden');
+                    labelVotacion.textContent = LABELS.votacion.primera;
+                    labelMiembro.textContent  = LABELS.miembro.primera;
                     setTimeout(hideMessage, 5000);
                 } else {
                     showMessage('error', 'Error: ' + (result.message || 'Desconocido'));
@@ -425,7 +450,7 @@
         });
 
         // ── Utilidades ─────────────────────────────────────────────
-        function fileToBase64(file) {
+        function fileToBase64(file, tipo) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
                 reader.readAsDataURL(file);
@@ -433,6 +458,7 @@
                     nombre_original: file.name,
                     mime_type:       file.type,
                     datos_base64:    reader.result.split(',')[1],
+                    tipo,
                 });
                 reader.onerror = reject;
             });
@@ -448,8 +474,7 @@
             statusMessage.className = `flex items-center gap-sm w-full p-sm rounded-lg mt-md ${cls}`;
             statusMessage.innerHTML = `
                 <span class="material-symbols-outlined" aria-hidden="true">${icon}</span>
-                <span class="font-body-sm">${text}</span>
-            `;
+                <span class="font-body-sm">${text}</span>`;
         }
 
         function hideMessage() {
