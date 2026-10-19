@@ -108,7 +108,7 @@
                 <img alt="Logo DHO" class="h-10 md:h-16 w-auto" src="logo-dho.png"/>
             </div>
             <h1 class="text-xs sm:text-sm md:text-xl font-bold tracking-tighter text-slate-900 dark:text-white min-w-0 leading-tight">
-                Registro de pago de multa por Elecciones Generales 2026 - 7 de junio
+                Registro de pago de multa por Elecciones Municipales y Regionales - 4 de Octubre
             </h1>
         </div>
     </header>
@@ -117,7 +117,7 @@
         <div class="w-full max-w-[640px]">
 
             <div class="mb-md md:mb-lg rounded-xl overflow-hidden h-[160px] md:h-[250px] relative shadow-lg">
-                <img alt="Imagen elecciones" class="w-full h-full object-cover object-top" src="elecciones.png"/>
+                <img alt="Imagen elecciones" class="w-full h-full object-cover object-top" src="elecciones.jpeg"/>
                 <div class="absolute inset-0 bg-gradient-to-t from-primary/60 to-transparent flex items-end p-md" aria-hidden="true">
                     <p class="font-h1 text-h2 text-white">Carga de Vouchers</p>
                 </div>
@@ -152,7 +152,7 @@
 <div class="my-md flex items-center gap-xs p-sm bg-surface-container-low rounded-lg border border-outline-variant">
     <input type="checkbox" id="checkboxSegundaVuelta" class="w-5 h-5 text-primary rounded border-outline-variant focus:ring-primary cursor-pointer" />
     <label for="checkboxSegundaVuelta" class="font-label-md text-on-surface cursor-pointer select-none">
-        ¿Desea registrar el pago de multa por Segunda Vuelta?
+        ¿Desea registrar el pago de multa por Segunda Vuelta de Regional del 6 de Octubre?
     </label>
 </div>
 
@@ -165,7 +165,7 @@
         class="group relative flex flex-col items-center justify-center w-full min-h-[120px] md:min-h-[150px] border-2 border-dashed border-secondary/30 rounded-xl bg-surface hover:bg-primary/5 hover:border-primary transition-all duration-300 p-sm md:p-md cursor-pointer">
         <div class="text-center pointer-events-none">
             <span class="material-symbols-outlined text-[36px] md:text-[48px] text-secondary mb-sm group-hover:text-primary" aria-hidden="true">cloud_upload</span>
-            <p class="font-body-md text-on-surface font-semibold">Arrastre el archivo aquí</p>
+            <p class="font-body-md text-on-surface font-semibold">Toque o arrastre el archivo aquí</p>
             <p class="font-body-sm text-on-surface-variant mt-1">Permitidos: JPG, PNG, PDF (Máx. 5 MB)</p>
         </div>
         <input id="fileUpload1" type="file" accept=".jpg,.jpeg,.png,.pdf"
@@ -191,7 +191,7 @@
         class="group relative flex flex-col items-center justify-center w-full min-h-[120px] md:min-h-[150px] border-2 border-dashed border-secondary/30 rounded-xl bg-surface hover:bg-primary/5 hover:border-primary transition-all duration-300 p-sm md:p-md cursor-pointer">
         <div class="text-center pointer-events-none">
             <span class="material-symbols-outlined text-[36px] md:text-[48px] text-secondary mb-sm group-hover:text-primary" aria-hidden="true">cloud_upload</span>
-            <p class="font-body-md text-on-surface font-semibold">Arrastre el archivo aquí</p>
+            <p class="font-body-md text-on-surface font-semibold">Toque o arrastre el archivo aquí</p>
             <p class="font-body-sm text-on-surface-variant mt-1">Permitidos: JPG, PNG, PDF (Máx. 5 MB)</p>
         </div>
         <input id="fileUpload2" type="file" accept=".jpg,.jpeg,.png,.pdf"
@@ -409,6 +409,10 @@
 
             if (!/^\d{8}$/.test(dni))
                 return showMessage('error', 'El DNI debe tener exactamente 8 dígitos numéricos.');
+            if (!apellidos)
+                return showMessage('error', 'Debe ingresar sus apellidos completos.');
+            if (!nombres)
+                return showMessage('error', 'Debe ingresar sus nombres.');
             if (!archivoVotacion)
                 return showMessage('error', 'Debe adjuntar el comprobante de multa por votación' + (esSV ? ' (Segunda Vuelta).' : '.'));
             if (checkboxMiembro.checked && !archivoMiembro)
@@ -438,7 +442,6 @@
                     zonaMiembroMesa.classList.add('hidden');
                     labelVotacion.textContent = LABELS.votacion.primera;
                     labelMiembro.textContent  = LABELS.miembro.primera;
-                    setTimeout(hideMessage, 5000);
                 } else {
                     showMessage('error', 'Error: ' + (result.message || 'Desconocido'));
                 }
